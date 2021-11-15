@@ -27,3 +27,6 @@ If you would like to edit a PR without creating a new commit, run the following:
 - `git add {filename}` - do this for each of the files you wish to submit for review
 - `git commit -a --amend'
 - `git push -f origin {branch_name}`
+
+## Zenhub
+To use the Zenhub features, use Google Chrome and navigate to the following link to add the zenhub widget to chrome: https://chrome.google.com/webstore/detail/zenhub-for-github/ogcgkffhplmphkaahpmffcafajaocjbd?hl=en-US
