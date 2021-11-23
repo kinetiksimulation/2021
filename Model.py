@@ -1,5 +1,7 @@
 import random
 
+import pandas as pd
+
 from Stage import Stage
 from OpportunitySource import OpportunitySource
 from WinLoss import Win, Loss
@@ -116,3 +118,26 @@ class Model:
         self.history[self.current_week] = revenue
         self.current_week += datetime.timedelta(weeks=num_weeks)
         return revenue
+
+    def get_report(self) -> pd.DataFrame:
+        d = {}
+        for stage in self.stages[:-2]:
+            d_2 = {}
+            for week in self.stages[0].history.keys():
+                d_2[week] = len(stage.history[week])
+            d[stage.name] = d_2
+        df = pd.DataFrame(d)
+        df.index.name = "Date"
+
+        d = {}
+        for stage in self.stages[-2:]:
+            d_2 = {}
+            for i, week in enumerate(self.stages[0].history.keys()):
+                d_2[week] = len(stage.history[week])
+                if i > 0:
+                    d_2[week] += d_2[week - datetime.timedelta(weeks=1)]
+            d[stage.name] = d_2
+        df['Win'] = d["Win"].values()
+        df['Loss'] = d["Loss"].values()
+
+        return df
