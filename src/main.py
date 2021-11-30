@@ -19,6 +19,8 @@ import pandas as pd
 import numpy as np
 import plotly
 
+from collections import Counter
+
 
 def normalize_rand_prob_matrix(prob_mat: [[float]]) -> [[float]]:
     p = prob_mat
@@ -27,12 +29,21 @@ def normalize_rand_prob_matrix(prob_mat: [[float]]) -> [[float]]:
     return p
     
 
-def make_bar_chart(dataset, categrical_col, title , frame_rate = 1):
+#function to create subplots
+def make_bar_charts(dataset, sources, amounts, categrical_col, title , frame_rate = 1):
 
+    #main dataset
     main_dataset = dataset.iloc[:, 0:len(dataset.columns)-2]
+    #win/loss dataset
     wins_dataset = dataset.iloc[:,len(dataset.columns)-2: len(dataset.columns)]
+
+    #dictionaries for formatting data
     main_cleaned_dict = {'Week': [], 'Stage': [], 'Leads': []}
     wins_cleaned_dict = {'Week': [], 'Type': [], 'Amount': []}
+    sources_cleaned_dict = {'Week': [], 'Stage': [], 'Sources': []}
+    amounts_cleaned_dict = {'Week': [], 'Stage': [], 'Amount': []}
+
+    #formatting the data
     for i in range(len(main_dataset.index)):
         for x in range(len(main_dataset.columns)):
             main_cleaned_dict['Week'].append(str(list(main_dataset.index)[i]))
@@ -42,31 +53,55 @@ def make_bar_chart(dataset, categrical_col, title , frame_rate = 1):
             wins_cleaned_dict['Week'].append(str(list(wins_dataset.index)[i]))
             wins_cleaned_dict['Type'].append(list(wins_dataset.columns)[k])
             wins_cleaned_dict['Amount'].append(wins_dataset.iloc[i][list(wins_dataset.columns)[k]])
+        for j in range(len(sources.columns)):
+            sources_cleaned_dict['Week'].append(str(list(sources.index)[i]))
+            sources_cleaned_dict['Stage'].append(list(sources.columns)[j])
+            sources_cleaned_dict['Sources'].append(sources.iloc[i][list(sources.columns)[j]])
+        for l in range(len(amounts.columns)):
+            amounts_cleaned_dict['Week'].append(str(list(amounts.index)[i]))
+            amounts_cleaned_dict['Stage'].append(list(amounts.columns)[l])
+            amounts_cleaned_dict['Amount'].append(amounts.iloc[i][list(amounts.columns)[l]])
 
-
-            
-        
-
-
+    #creating dfs
     main_df = pd.DataFrame(main_cleaned_dict)
     wins_df = pd.DataFrame(wins_cleaned_dict)
-
+    sources_df = pd.DataFrame(sources_cleaned_dict)
+    amounts_df = pd.DataFrame(amounts_cleaned_dict)
+    sources_amounts_df = pd.merge(sources_df,amounts_df,how='inner',on=('Week','Stage'))
+    
+    #start and end weeks for dataset, currently not being used
     start_week = str(main_df.Week.min())
     end_week = str(main_df.Week.max())
 
-    fig = make_subplots(3, 1, subplot_titles=('Leads per Week by Stage','','Results for Each Week'))
+    #parent figure
+    fig = make_subplots(3, 3, subplot_titles=('','Leads per Week by Stage','','','','','','Results for Each Week',''))
 
+    #color formatting
     main_bar_colors = ['#78a9ff','#4589ff','#0f62fe','#0043ce','#002d9c','#001d6c']
     wins_bar_colors = ['#0e6027','#a2191f']
+
+    #create plots for each week.
     for i in range(len(main_df.Week.unique())):
         date = main_df.Week.unique()[i]
+
+        #default value for which plots are visible
         visible = False
+
+        #setting first plots only to visible
         if i == 0:
             visible = True
-        fig.add_bar(x=main_df[main_df.Week == date]['Stage'],y=main_df[main_df.Week == date]['Leads'],visible=visible,row=1,col=1, marker_color=main_bar_colors,hovertemplate='Leads: %{y}<extra></extra>')
-        fig.add_bar(y=wins_df[wins_df.Week == date]['Type'],x=wins_df[wins_df.Week == date]['Amount'],visible=visible,row=3,col=1,orientation='h',marker_color=wins_bar_colors,hovertemplate=['Wins: %{x}<extra></extra>','Losses: %{x}<extra></extra>'])
+
+        #total contract amounts for each stage
+        amounts_list = [x for x in sources_amounts_df[sources_amounts_df.Week == date]['Amount']]
+
+        #top middle bar
+        fig.add_trace(go.Bar(x=sources_amounts_df[sources_amounts_df.Week == date]['Stage'],y=[len(x) for x in sources_amounts_df[sources_amounts_df.Week == date]['Sources']],visible=visible, marker_color=main_bar_colors,hovertemplate='<b>Leads</b>: %{y}' + '<br>%{customdata}<extra></extra>',customdata=['<b>Total Amount for Stage</b>: {}'.format(x) for x in amounts_list]),row=1,col=2)
+        
+        #bottom middle bar
+        fig.add_trace(go.Bar(y=wins_df[wins_df.Week == date]['Type'],x=wins_df[wins_df.Week == date]['Amount'],visible=visible,orientation='h',marker_color=wins_bar_colors,hovertemplate=['Wins: %{x}<extra></extra>','Losses: %{x}<extra></extra>']),row=3,col=2)
  
     
+    #creating steps for sliders, each step makes the plots for that week visible
     steps = []
     for i in range(len(main_df.Week.unique())):
         date = main_df.Week.unique()[i]
@@ -79,6 +114,7 @@ def make_bar_chart(dataset, categrical_col, title , frame_rate = 1):
         step['args'][1][i*2+1] = True
         steps.append(step)
 
+    #creating sliders
     sliders = [dict(
         steps = steps,
         font=dict(
@@ -89,29 +125,33 @@ def make_bar_chart(dataset, categrical_col, title , frame_rate = 1):
         y=0.6,
         currentvalue={'visible':True, 'prefix': 'Week: '}
     )]
-    
-    fig.layout.sliders = sliders
-    fig.layout.yaxis.range = [0,main_df.Leads.max()+1]
-    fig.layout.xaxis3.range = [0,wins_df.Amount.max()+1]
-    fig.layout.xaxis.title = 'Stage'
-    fig.layout.xaxis3.title = 'Amount'
-    fig.layout.yaxis.title = 'Leads'
-    fig.layout.yaxis3.title = 'Results'
 
+    #setting layout props
+    fig.layout.sliders = sliders
+    fig.layout.yaxis2.range = [0,main_df.Leads.max()+1]
+    fig.layout.xaxis8.range = [0,wins_df.Amount.max()+1]
+    fig.layout.xaxis2.title = 'Stage'
+    fig.layout.xaxis8.title = 'Amount'
+    fig.layout.yaxis2.title = 'Leads'
+    fig.layout.yaxis8.title = 'Results'
     fig.layout.showlegend = False
 
-    go.FigureWidget(fig)
+    #go.FigureWidget(fig)
 
     fig.show()
 
 def plot_history(m: Model):
     # Get model report
     dataset = m.get_report()
+
+    sources = pd.DataFrame(dataset[1])
+    amounts = pd.DataFrame(dataset[2])
+    dataset = dataset[0]
+
     # print(df)
     # Ignore Win/Loss column - Uncomment to show
     #
-    
-    make_bar_chart(dataset, "Stage", title = "Leads", frame_rate = 5)    
+    make_bar_charts(dataset, sources, amounts, "Stage", title = "Leads", frame_rate = 5)    
 
 
 def main():

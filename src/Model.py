@@ -140,4 +140,23 @@ class Model:
         df['Win'] = d["Win"].values()
         df['Loss'] = d["Loss"].values()
 
-        return df
+        #set up dictionary for the total contract amount per week/stage (could revise these to do it all at once in the future)
+        sources = {}
+        for stage in self.stages[:-2]:
+            d = {}
+            for week in stage.history.keys():
+                d[week] = []
+                for lead in stage.history[week]:
+                    d[week].append(lead.opportunity_source.value)
+            sources[stage.name] = d
+        
+        #set up the dictionary for the total contract amount per week/stage
+        amounts = {}
+        for stage in self.stages[:-2]:
+            d = {}
+            for week in stage.history.keys():
+                d[week] = 0
+                for lead in stage.history[week]:
+                    d[week] += lead.contract
+            amounts[stage.name] = d
+        return (df,sources,amounts)
