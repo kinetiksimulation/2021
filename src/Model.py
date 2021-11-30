@@ -152,7 +152,7 @@ class Model:
         
         #set up the dictionary for the total contract amount per week/stage
         amounts = {}
-        for stage in self.stages[:-2]:
+        for stage in self.stages:
             d = {}
             for week in stage.history.keys():
                 d[week] = 0
