@@ -126,10 +126,10 @@ def make_bar_charts(dataset, sources, amounts, categrical_col, title , frame_rat
 
 
         #top bar
-        fig.add_trace(go.Bar(x=sources_amounts_df[sources_amounts_df.Week == date]['Stage'],y=[len(x) for x in sources_amounts_df[sources_amounts_df.Week == date]['Sources']],visible=visible, marker_color=main_bar_colors,hovertemplate='<b>Leads</b>: %{y}' + '<br>%{customdata}<extra></extra>',customdata=['<b>Total Contract Amount</b>: {}'.format(x) for x in stage_amounts_list], text=percentages_lads_stages_list, textposition='outside'),row=1,col=2)
+        fig.add_trace(go.Bar(x=sources_amounts_df[sources_amounts_df.Week == date]['Stage'],y=[len(x) for x in sources_amounts_df[sources_amounts_df.Week == date]['Sources']],visible=visible, marker_color=main_bar_colors,hovertemplate='<b>Leads</b>: %{y}' + '<br>%{customdata}<extra></extra>',customdata=['<b>Total Contract Amount</b>: {:,}'.format(x) for x in stage_amounts_list], text=percentages_lads_stages_list, textposition='outside'),row=1,col=2)
         
         #bottom middle bar
-        fig.add_trace(go.Bar(y=wins_df[wins_df.Week == date]['Stage'],x=wins_df[wins_df.Week == date]['Amount'],visible=visible,orientation='h',marker_color=wins_bar_colors,hovertemplate=['Wins: %{x}' + '<br>%{customdata}<extra></extra>','Losses: %{x}' + '<br>%{customdata}<extra></extra>'],customdata=['<b>Total Contract Amount</b>: {}'.format(x) for x in wins_amounts_list], text=percentage_leads_lost_won_list, textposition='outside'),row=4,col=2)
+        fig.add_trace(go.Bar(y=wins_df[wins_df.Week == date]['Stage'],x=wins_df[wins_df.Week == date]['Amount'],visible=visible,orientation='h',marker_color=wins_bar_colors,hovertemplate=['Wins: %{x}' + '<br>%{customdata}<extra></extra>','Losses: %{x}' + '<br>%{customdata}<extra></extra>'],customdata=['<b>Total Contract Amount</b>: {:,}'.format(x) for x in wins_amounts_list], text=percentage_leads_lost_won_list, textposition='outside'),row=4,col=2)
  
     
     #creating steps for sliders, each step makes the plots for that week visible
