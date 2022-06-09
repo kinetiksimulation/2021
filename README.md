@@ -1,5 +1,5 @@
 # js-project-6
-Perfect Pipelines Development Repo
+Kinetik Simulation Development Repo
 
 ## Development
 
