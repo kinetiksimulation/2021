@@ -30,3 +30,12 @@ If you would like to edit a PR without creating a new commit, run the following:
 
 ## Zenhub
 To use the Zenhub features, use Google Chrome and navigate to the following link to add the zenhub widget to chrome: https://chrome.google.com/webstore/detail/zenhub-for-github/ogcgkffhplmphkaahpmffcafajaocjbd?hl=en-US
+
+
+
+## Notes to Add features
+- add animation
+- add more charts/info
+- cleaner hover box formatting
+- stacked bar charts with sources being one box on the bars
+- dynamic statistics to decide the percentages of what teams are making it where in the pipeline
